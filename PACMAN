@@ -1,0 +1,164 @@
+import pygame
+import sys
+import random
+
+# Inicjalizacja Pygame
+pygame.init()
+
+# Ustawienia okna
+WIDTH, HEIGHT = 600, 600
+GRID_SIZE = 20
+GRID_WIDTH = WIDTH // GRID_SIZE
+GRID_HEIGHT = HEIGHT // GRID_SIZE
+WINDOW_SIZE = (WIDTH, HEIGHT)
+FPS = 60
+
+# Kolory
+BLACK = (0, 0, 0)a
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
+
+# Inicjalizacja okna gry
+screen = pygame.display.set_mode(WINDOW_SIZE)
+pygame.display.set_caption("Pacman")
+
+# Klasy postaci
+class Pacman:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.radius = GRID_SIZE // 2 - 2
+        self.direction = "right"
+    
+    def draw(self):
+        pygame.draw.circle(screen, YELLOW, (self.x, self.y), self.radius)
+
+    def move(self, direction):
+        if direction == "up":
+            self.y -= GRID_SIZE
+        elif direction == "down":
+            self.y += GRID_SIZE
+        elif direction == "left":
+            self.x -= GRID_SIZE
+        elif direction == "right":
+            self.x += GRID_SIZE
+
+    def check_collision(self, x, y):
+        return self.x == x and self.y == y
+
+class Ghost:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.color = RED
+
+    def draw(self):
+        pygame.draw.rect(screen, self.color, (self.x, self.y, GRID_SIZE, GRID_SIZE))
+
+# Inicjalizacja postaci
+pacman = Pacman(GRID_SIZE * 3, GRID_SIZE * 3)
+ghosts = [Ghost(GRID_SIZE * 5, GRID_SIZE * 4), Ghost(GRID_SIZE * 8, GRID_SIZE * 6)]
+
+# Plansza
+board = [
+    "####################",
+    "#..................#",
+    "#.###.###..###.###.#",
+    "#.#G#.#G#..#G#.#G#.#",
+    "#.###.###..###.###.#",
+    "#..................#",
+    "#.###.#.#####.#.###.#",
+    "#.....#...#...#.....#",
+    "#####.#.#.#.#.#####",
+    ".........#..........",
+    "#####.#.#.#.#.#####",
+    "#.....#...#...#.....#",
+    "#.###.#.#####.#.###.#",
+    "#..................#",
+    "#.###.###..###.###.#",
+    "#.#G#.#G#..#G#.#G#.#",
+    "#.###.###..###.###.#",
+    "#..................#",
+    "####################"
+]
+
+# Funkcja rysująca planszę
+def draw_board():
+    for row_index, row in enumerate(board):
+        for col_index, col in enumerate(row):
+            x = col_index * GRID_SIZE
+            y = row_index * GRID_SIZE
+            if col == "#":
+                pygame.draw.rect(screen, BLUE, (x, y, GRID_SIZE, GRID_SIZE))
+            elif col == ".":
+                pygame.draw.circle(screen, WHITE, (x + GRID_SIZE // 2, y + GRID_SIZE // 2), 4)
+
+# Główna pętla gry
+def main():
+    running = True
+    clock = pygame.time.Clock()
+    
+    while running:
+        screen.fill(BLACK)
+        
+        # Obsługa zdarzeń
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    pacman.direction = "up"
+                elif event.key == pygame.K_DOWN:
+                    pacman.direction = "down"
+                elif event.key == pygame.K_LEFT:
+                    pacman.direction = "left"
+                elif event.key == pygame.K_RIGHT:
+                    pacman.direction = "right"
+        
+        # Ruch Pacmana
+        pacman.move(pacman.direction)
+        
+        # Kolizja Pacmana z granicami planszy
+        if pacman.x < 0:
+            pacman.x = WIDTH - GRID_SIZE
+        elif pacman.x >= WIDTH:
+            pacman.x = 0
+        elif pacman.y < 0:
+            pacman.y = HEIGHT - GRID_SIZE
+        elif pacman.y >= HEIGHT:
+            pacman.y = 0
+        
+        # Kolizja Pacmana z ścianami
+        grid_x = pacman.x // GRID_SIZE
+        grid_y = pacman.y // GRID_SIZE
+        if board[grid_y][grid_x] == "#":
+            pacman.move("left")
+        
+        # Kolizja Pacmana z punktami
+        if board[grid_y][grid_x] == ".":
+            board[grid_y] = board[grid_y][:grid_x] + " " + board[grid_y][grid_x+1:]
+        
+        # Kolizja Pacmana z duchami
+        for ghost in ghosts:
+            if pacman.check_collision(ghost.x, ghost.y):
+                print("Game Over!")
+                pygame.quit()
+                sys.exit()
+        
+        # Rysowanie planszy i postaci
+        draw_board()
+        pacman.draw()
+        for ghost in ghosts:
+            ghost.draw()
+
+        # Aktualizacja ekranu
+        pygame.display.flip()
+        clock.tick(FPS)
+
+# Uruchomienie programu
+if __name__ == "__main__":
+    main()
