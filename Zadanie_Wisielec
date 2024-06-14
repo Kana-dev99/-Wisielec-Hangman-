@@ -1,0 +1,127 @@
+import random
+
+# Lista słów do odgadnięcia
+words = ["python", "hangman", "computer", "keyboard", "programming", "debugging", "syntax", "algorithm"]
+
+def choose_word(words):
+    return random.choice(words)
+
+def display_word(word, guessed_letters):
+    display = ""
+    for letter in word:
+        if letter in guessed_letters:
+            display += letter + " "
+        else:
+            display += "_ "
+    return display.strip()
+
+def hangman():
+    print("Welcome to Hangman!")
+    word = choose_word(words)
+    guessed_letters = []
+    attempts_left = 6
+    
+    while attempts_left > 0:
+        print("\nAttempts left:", attempts_left)
+        print("Word:", display_word(word, guessed_letters))
+        
+        guess = input("Guess a letter or the whole word: ").lower()
+        
+        if len(guess) == 1:  # Guessing a letter
+            if guess in guessed_letters:
+                print("You've already guessed that letter!")
+            elif guess in word:
+                print("Good guess!")
+                guessed_letters.append(guess)
+            else:
+                print("Wrong guess!")
+                attempts_left -= 1
+        else:  # Guessing the whole word
+            if guess == word:
+                print("Congratulations! You've guessed the word:", word)
+                break
+            else:
+                print("Wrong guess! The word was:", word)
+                break
+        
+        # Check if the word has been completely guessed
+        if all(letter in guessed_letters or letter == " " for letter in word):
+            print("Congratulations! You've guessed the word:", word)
+            break
+        
+        # Draw hangman
+        draw_hangman(6 - attempts_left)
+    
+    if attempts_left == 0:
+        print("Sorry, you ran out of attempts. The word was:", word)
+
+def draw_hangman(step):
+    stages = [  # Hangman stages (6 attempts)
+        """
+           --------
+           |      |
+           |      O
+           |     \|/
+           |      |
+           |     / \\
+           -
+        """,
+        """
+           --------
+           |      |
+           |      O
+           |     \|/
+           |      |
+           |     / 
+           -
+        """,
+        """
+           --------
+           |      |
+           |      O
+           |     \|/
+           |      |
+           |      
+           -
+        """,
+        """
+           --------
+           |      |
+           |      O
+           |     \|
+           |      |
+           |     
+           -
+        """,
+        """
+           --------
+           |      |
+           |      O
+           |      |
+           |      |
+           |     
+           -
+        """,
+        """
+           --------
+           |      |
+           |      O
+           |     
+           |     
+           |     
+           -
+        """,
+        """
+           --------
+           |      |
+           |      
+           |     
+           |     
+           |     
+           -
+        """
+    ]
+    print(stages[step])
+
+# Rozpoczęcie gry
+hangman()
